@@ -1,7 +1,7 @@
 require "action-controller"
 
 module PlaceOS::LogBackend
-  LOG_STDOUT    = ActionController.default_backend
+  STDOUT    = ActionController.default_backend
   LOGSTASH_HOST = ENV["LOGSTASH_HOST"]?
   LOGSTASH_PORT = ENV["LOGSTASH_PORT"]?
 
