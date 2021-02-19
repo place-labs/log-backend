@@ -1,0 +1,11 @@
+name: placeos-log-backend
+version: 0.1.0
+crystal: ~> 0.36
+license: MIT
+
+dependencies:
+  action-controller:
+    github: spider-gazelle/action-controller
+    version: ~> 4
+authors:
+  - Caspian Baska <caspian@place.tech>
