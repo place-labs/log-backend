@@ -1,13 +1,13 @@
 require "action-controller"
 
 module PlaceOS::LogBackend
-  STDOUT    = ActionController.default_backend
-  LOGSTASH_HOST = ENV["LOGSTASH_HOST"]?
-  LOGSTASH_PORT = ENV["LOGSTASH_PORT"]?
+  STDOUT        = ActionController.default_backend
+  LOGSTASH_HOST = ENV["LOGSTASH_HOST"]?.presence
+  LOGSTASH_PORT = ENV["LOGSTASH_PORT"]?.try &.to_i?
 
   def self.log_backend(
-    logstash_host : String? = ENV["LOGSTASH_HOST"]?.presence,
-    logstash_port : Int32? = ENV["LOGSTASH_PORT"]?.try(&.to_i?),
+    logstash_host : String? = LOGSTASH_HOST,
+    logstash_port : Int32? = LOGSTASH_PORT,
     default_backend : Log::IOBackend = ActionController.default_backend
   )
     if logstash_host
