@@ -1,6 +1,8 @@
 require "action-controller"
 require "log"
 
+require "./ext/log/broadcast_backend"
+
 module PlaceOS::LogBackend
   STDOUT        = ActionController.default_backend
   LOGSTASH_HOST = ENV["LOGSTASH_HOST"]?.presence
@@ -22,7 +24,7 @@ module PlaceOS::LogBackend
         socket.sync = false
       end
     rescue IO::Error
-      Log.error { {message: "failed to connect to logstash", host: host, port: port} }
+      Log.error { {message: "failed to connect to logstash", host: logstash_host, port: logstash_port} }
       nil
     end
 
