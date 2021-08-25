@@ -72,7 +72,7 @@ module PlaceOS::LogBackend
   @[Deprecated(
     <<-MESSAGE
       `logstash_host` and `logstash_port` arguments are deprecated.
-      Use `udp_source_host` and `udp_source_port` instead.
+      Use `udp_log_host` and `udp_log_port` instead.
     MESSAGE
   )]
   def self.log_backend(
@@ -80,38 +80,38 @@ module PlaceOS::LogBackend
     logstash_port : Int32? = UDP_LOG_PORT,
     default_backend : ::Log::IOBackend = ActionController.default_backend
   )
-    log_backend(udp_source_host: logstash_host, udp_source_port: logstash_port)
+    log_backend(udp_log_host: logstash_host, udp_log_port: logstash_port)
   end
 
   def self.log_backend(
-    udp_source_host : String? = UDP_LOG_HOST,
-    udp_source_port : Int32? = UDP_LOG_PORT,
+    udp_log_host : String? = UDP_LOG_HOST,
+    udp_log_port : Int32? = UDP_LOG_PORT,
     default_backend : ::Log::IOBackend = ActionController.default_backend
   )
-    return default_backend if logstash_host.nil?
+    return default_backend if udp_log_host.nil?
 
-    abort("UDP_LOG_PORT is either malformed or not present in environment") if logstash_port.nil?
+    abort("UDP_LOG_PORT is either malformed or not present in environment") if udp_log_port.nil?
 
     # Logstash UDP Input
-    logstash = begin
+    udp_stream = begin
       UDPSocket.new.tap do |socket|
-        socket.connect logstash_host, logstash_port
+        socket.connect udp_log_host, udp_log_port
         socket.sync = false
       end
     rescue IO::Error
-      Log.error { {message: "failed to connect to logstash", host: logstash_host, port: logstash_port} }
+      Log.error { {message: "failed to connect to UDP log consumer", host: udp_log_host, port: udp_log_port} }
       nil
     end
 
-    # Use the default backend if connection to logstash failed
-    return default_backend if logstash.nil?
+    # Use the default backend if connection to UDP log consumer failed
+    return default_backend if udp_stream.nil?
 
     # Debug at the broadcast backend level, however this will be filtered by
     # the bindings.
     ::Log::BroadcastBackend.new.tap do |backend|
       backend.append(default_backend, :trace)
       backend.append(ActionController.default_backend(
-        io: logstash,
+        io: udp_stream,
         formatter: ActionController.json_formatter
       ), :trace)
     end
