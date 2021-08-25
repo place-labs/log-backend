@@ -1,7 +1,9 @@
 # PlaceOS Log Backend
 
 Logging backend in common use across PlaceOS services.
-Will open a UDP stream to a logstash server if `LOGSTASH_HOST` and `LOGSTASH_PORT` are configured.
+
+A UDP stream will be opened to a log server if `UDP_LOG_HOST` and `UDP_LOG_PORT`
+are in the environment.
 
 ## Usage
 
