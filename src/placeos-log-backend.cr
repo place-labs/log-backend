@@ -85,12 +85,7 @@ module PlaceOS::LogBackend
     Signal::USR2.trap &logging
   end
 
-  @[Deprecated(
-    <<-MESSAGE
-      `logstash_host` and `logstash_port` arguments are deprecated.
-      Use `udp_log_host` and `udp_log_port` instead.
-    MESSAGE
-  )]
+  @[Deprecated("Use `udp_log_host` and `udp_log_port` arguments.")]
   def self.log_backend(
     logstash_host : String? = UDP_LOG_HOST,
     logstash_port : Int32? = UDP_LOG_PORT,
