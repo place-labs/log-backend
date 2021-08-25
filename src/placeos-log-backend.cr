@@ -6,8 +6,8 @@ require "./ext/log/broadcast_backend"
 module PlaceOS::LogBackend
   Log           = ::Log.for(self)
   STDOUT        = ActionController.default_backend
-  LOGSTASH_HOST = ENV["LOGSTASH_HOST"]?.presence
-  LOGSTASH_PORT = ENV["LOGSTASH_PORT"]?.try &.to_i?
+  UDP_LOG_HOST = ENV["UDP_LOG_HOST"]?.presence || ENV["LOGSTASH_HOST"]?.presence
+  UDP_LOG_PORT = (ENV["UDP_LOG_PORT"]?.presence || ENV["LOGSTASH_PORT"]?.presence).try &.to_i?
 
   # Hook to toggle `Log` instances' `:trace` severity
   # ## `enabled`
@@ -69,14 +69,28 @@ module PlaceOS::LogBackend
     Signal::USR2.trap &logging
   end
 
+  @[Deprecated(
+    <<-MESSAGE
+      `logstash_host` and `logstash_port` arguments are deprecated.
+      Use `udp_source_host` and `udp_source_port` instead.
+    MESSAGE
+  )]
   def self.log_backend(
-    logstash_host : String? = LOGSTASH_HOST,
-    logstash_port : Int32? = LOGSTASH_PORT,
+    logstash_host : String? = UDP_LOG_HOST,
+    logstash_port : Int32? = UDP_LOG_PORT,
+    default_backend : ::Log::IOBackend = ActionController.default_backend
+  )
+    log_backend(udp_source_host: logstash_host, udp_source_port: logstash_port)
+  end
+
+  def self.log_backend(
+    udp_source_host : String? = UDP_LOG_HOST,
+    udp_source_port : Int32? = UDP_LOG_PORT,
     default_backend : ::Log::IOBackend = ActionController.default_backend
   )
     return default_backend if logstash_host.nil?
 
-    abort("LOGSTASH_PORT is either malformed or not present in environment") if logstash_port.nil?
+    abort("UDP_LOG_PORT is either malformed or not present in environment") if logstash_port.nil?
 
     # Logstash UDP Input
     logstash = begin
