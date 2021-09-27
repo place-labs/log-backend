@@ -4,8 +4,17 @@ require "log"
 require "./ext/log/broadcast_backend"
 
 module PlaceOS::LogBackend
-  Log          = ::Log.for(self)
-  STDOUT       = ActionController.default_backend
+  enum Format
+    Line
+    JSON
+  end
+
+  Log = ::Log.for(self)
+
+  STDOUT = ActionController.default_backend
+
+  LOG_FORMAT = ENV["PLACE_LOG_FORMAT"]?.presence.try { |format| Format.parse format } || Format::Line
+
   UDP_LOG_HOST = self.env_with_deprecation("UDP_LOG_HOST", "LOGSTASH_HOST")
   UDP_LOG_PORT = self.env_with_deprecation("UDP_LOG_PORT", "LOGSTASH_PORT").try &.to_i?
 
@@ -85,20 +94,17 @@ module PlaceOS::LogBackend
     Signal::USR2.trap &logging
   end
 
-  @[Deprecated("Use `udp_log_host` and `udp_log_port` arguments.")]
-  def self.log_backend(
-    logstash_host : String? = UDP_LOG_HOST,
-    logstash_port : Int32? = UDP_LOG_PORT,
-    default_backend : ::Log::IOBackend = ActionController.default_backend
-  )
-    log_backend(udp_log_host: logstash_host, udp_log_port: logstash_port)
-  end
-
   def self.log_backend(
     udp_log_host : String? = UDP_LOG_HOST,
     udp_log_port : Int32? = UDP_LOG_PORT,
-    default_backend : ::Log::IOBackend = ActionController.default_backend
+    default_backend : ::Log::IOBackend = ActionController.default_backend,
+    format : Format = LOG_FORMAT
   )
+    case format
+    in .line? then default_backend.formatter = ActionController.default_formatter
+    in .json? then default_backend.formatter = ActionController.json_formatter
+    end
+
     return default_backend if udp_log_host.nil?
 
     abort("UDP_LOG_PORT is either malformed or not present in environment") if udp_log_port.nil?
