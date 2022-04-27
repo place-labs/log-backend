@@ -1,0 +1,69 @@
+require "opentelemetry-instrumentation"
+
+module PlaceOS::LogBackend
+  # OTLP configuration
+  OTEL_EXPORTER_OTLP_ENDPOINT = ENV["OTEL_EXPORTER_OTLP_ENDPOINT"]?
+  OTEL_EXPORTER_OTLP_HEADERS  = ENV["OTEL_EXPORTER_OTLP_HEADERS"]?
+
+  # Api Keys
+  OTEL_EXPORTER_OTLP_API_KEY = ENV["OTEL_EXPORTER_OTLP_API_KEY"]?
+  NEW_RELIC_LICENSE_KEY      = ENV["NEW_RELIC_LICENSE_KEY"]?
+  ELASTIC_APM_API_KEY        = ENV["ELASTIC_APM_API_KEY"]?
+
+  # Call this method to configure OpenTelemetry.
+  #
+  # The client will not initialize if the `OTEL_EXPORTER_OTLP_ENDPOINT` environment
+  # variable is not present.
+  #
+  # ## Environment
+  #
+  # *OTLP configuration*
+  # - `OTEL_EXPORTER_OTLP_ENDPOINT`
+  # - `OTEL_EXPORTER_OTLP_HEADERS`: e.g `Hello=world,Foo=bar`
+  #
+  # *Api Keys*
+  # - `OTEL_EXPORTER_OTLP_API_KEY`
+  # - `NEW_RELIC_LICENSE_KEY`
+  # - `ELASTIC_APM_API_KEY`
+  def self.configure_opentelemetry(
+    service_name : String,
+    service_version : String,
+    endpoint : String? = OTEL_EXPORTER_OTLP_ENDPOINT,
+    header_environment : String? = OTEL_EXPORTER_OTLP_HEADERS,
+    otel_key : String? = OTEL_EXPORTER_OTLP_API_KEY,
+    new_relic_key : String? = NEW_RELIC_LICENSE_KEY,
+    elastic_apm_key : String? = ELASTIC_APM_API_KEY
+  )
+    if endpoint.nil?
+      Log.for("place_os.log_backend.opentelemetry").info { "OTEL_EXPORTER_OTLP_ENDPOINT not configured" }
+      return
+    end
+
+    headers = HTTP::Headers.new
+
+    # Set HTTP Headers from the environment
+    if header_environment
+      header_environment.split(',').map(&.split('=', limit: 2)).each do |key, value|
+        headers[key] = value
+      end
+    end
+
+    # Authorization
+    if otel_key
+      headers["Api-Key"] = otel_key
+    elsif elastic_apm_key
+      headers["Authorization"] = "ApiKey #{elastic_apm_key}"
+    elsif new_relic_key
+      headers["Api-Key"] = new_relic_key
+    end
+
+    OpenTelemetry.configure do |config|
+      config.service_name = "PlaceOS Rest-API"
+      config.service_version = "1.0.0"
+      config.exporter = OpenTelemetry::Exporter.new(variant: :http) do |exporter|
+        exporter.headers = headers
+        exporter.endpoint = endpoint
+      end
+    end
+  end
+end
