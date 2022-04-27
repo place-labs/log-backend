@@ -67,8 +67,8 @@ module PlaceOS::LogBackend
     end
 
     OpenTelemetry.configure do |config|
-      config.service_name = "PlaceOS Rest-API"
-      config.service_version = "1.0.0"
+      config.service_name = service_name
+      config.service_version = service_version
       config.exporter = OpenTelemetry::Exporter.new(variant: :http) do |exporter|
         exporter.headers = headers
         exporter.endpoint = endpoint
