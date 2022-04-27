@@ -52,7 +52,7 @@ module PlaceOS::LogBackend
 
     # Set HTTP Headers from the environment
     if header_environment
-      header_environment.split(',').map(&.split('=', limit: 2)).each do |key, value|
+      header_environment.split(',').map(&.split('=', limit: 2)).each do |(key, value)|
         headers[key] = value
       end
     end
@@ -70,8 +70,8 @@ module PlaceOS::LogBackend
       config.service_name = service_name
       config.service_version = service_version
       config.exporter = OpenTelemetry::Exporter.new(variant: :http) do |exporter|
-        exporter.headers = headers
-        exporter.endpoint = endpoint
+        exporter.as(OpenTelemetry::Exporter::Http).headers = headers
+        exporter.as(OpenTelemetry::Exporter::Http).endpoint = endpoint
       end
     end
   end
