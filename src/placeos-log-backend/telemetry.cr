@@ -15,6 +15,15 @@ module PlaceOS::LogBackend
   # The client will not initialize if the `OTEL_EXPORTER_OTLP_ENDPOINT` environment
   # variable is not present.
   #
+  # ## Usage
+  #
+  # ```
+  # PlaceOS::LogBackend.configure_opentelemetry(
+  #   service_name: APP_NAME,
+  #   service_version: VERSION,
+  # )
+  # ```
+  #
   # ## Environment
   #
   # *OTLP configuration*
