@@ -1,5 +1,5 @@
 name: placeos-log-backend
-version: 0.7.3
+version: 0.8.0
 crystal: "~> 1.0"
 license: MIT
 
@@ -8,7 +8,8 @@ dependencies:
     github: spider-gazelle/action-controller
     version: ~> 4
   opentelemetry-instrumentation:
-    github: wyhaines/opentelemetry-instrumentation.cr
+    github: place-labs/opentelemetry-instrumentation.cr
+    branch: feat/spider-gazelle/distributed-trace
 
 authors:
   - Caspian Baska <caspian@place.tech>

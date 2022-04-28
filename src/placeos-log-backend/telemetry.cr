@@ -1,6 +1,8 @@
 require "opentelemetry-instrumentation"
 require "opentelemetry-instrumentation/src/opentelemetry/instrumentation/**"
 
+require "../ext/http/client"
+
 module PlaceOS::LogBackend
   # OTLP configuration
   OTEL_EXPORTER_OTLP_ENDPOINT = ENV["OTEL_EXPORTER_OTLP_ENDPOINT"]?.presence
