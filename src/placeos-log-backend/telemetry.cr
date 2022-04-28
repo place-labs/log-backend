@@ -67,11 +67,11 @@ module PlaceOS::LogBackend
 
     # Authorization
     if otel_key
-      headers["Api-Key"] = otel_key
+      headers["api-key"] = otel_key
     elsif elastic_apm_key
       headers["Authorization"] = "ApiKey #{elastic_apm_key}"
     elsif new_relic_key
-      headers["Api-Key"] = new_relic_key
+      headers["api-key"] = new_relic_key
     end
 
     OpenTelemetry.configure do |config|
