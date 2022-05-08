@@ -1,16 +1,9 @@
 require "opentelemetry-instrumentation"
 require "opentelemetry-instrumentation/src/opentelemetry/instrumentation/**"
 
+require "./constants"
+
 module PlaceOS::LogBackend
-  # OTLP configuration
-  OTEL_EXPORTER_OTLP_ENDPOINT = ENV["OTEL_EXPORTER_OTLP_ENDPOINT"]?.presence
-  OTEL_EXPORTER_OTLP_HEADERS  = ENV["OTEL_EXPORTER_OTLP_HEADERS"]?.presence
-
-  # Api Keys
-  OTEL_EXPORTER_OTLP_API_KEY = ENV["OTEL_EXPORTER_OTLP_API_KEY"]?.presence
-  NEW_RELIC_LICENSE_KEY      = ENV["NEW_RELIC_LICENSE_KEY"]?.presence
-  ELASTIC_APM_API_KEY        = ENV["ELASTIC_APM_API_KEY"]?.presence
-
   # :nodoc:
   module Telemetry
     Log = ::Log.for(self)
