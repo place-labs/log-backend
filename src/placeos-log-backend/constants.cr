@@ -1,3 +1,7 @@
+require "log"
+
+require "./format"
+
 module PlaceOS
   # OTLP configuration
   OTEL_EXPORTER_OTLP_ENDPOINT = ENV["OTEL_EXPORTER_OTLP_ENDPOINT"]?.presence
@@ -8,7 +12,7 @@ module PlaceOS
   NEW_RELIC_LICENSE_KEY      = ENV["NEW_RELIC_LICENSE_KEY"]?.presence
   ELASTIC_APM_API_KEY        = ENV["ELASTIC_APM_API_KEY"]?.presence
 
-  LOG_FORMAT = ENV["PLACE_LOG_FORMAT"]?.presence.try { |format| Format.parse format } || Format::Line
+  LOG_FORMAT = ENV["PLACE_LOG_FORMAT"]?.presence.try { |format| ::PlaceOS::LogBackend::Format.parse format } || ::PlaceOS::LogBackend::Format::Line
 
   UDP_LOG_HOST = self.env_with_deprecation("UDP_LOG_HOST", "LOGSTASH_HOST")
   UDP_LOG_PORT = self.env_with_deprecation("UDP_LOG_PORT", "LOGSTASH_PORT").try &.to_i?

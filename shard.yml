@@ -1,5 +1,5 @@
 name: placeos-log-backend
-version: 0.10.1
+version: 0.10.2
 crystal: "~> 1.0"
 license: MIT
 
