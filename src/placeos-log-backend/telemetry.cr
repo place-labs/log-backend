@@ -4,6 +4,8 @@ require "opentelemetry-instrumentation"
 require "opentelemetry-instrumentation/src/opentelemetry/instrumentation/*"
 require "opentelemetry-instrumentation/src/opentelemetry/instrumentation/shards/*"
 require "opentelemetry-instrumentation/src/opentelemetry/instrumentation/frameworks/spider-gazelle"
+# Require specific DB shards to prevent namespace clashes
+require "opentelemetry-instrumentation/src/opentelemetry/instrumentation/db/stefanwille_redis"
 # Require everything except the log instrumentation
 require "opentelemetry-instrumentation/src/opentelemetry/instrumentation/crystal/db"
 require "opentelemetry-instrumentation/src/opentelemetry/instrumentation/crystal/http_client"
