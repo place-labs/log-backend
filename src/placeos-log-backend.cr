@@ -1,7 +1,9 @@
 require "action-controller"
 require "log"
+require "opentelemetry-instrumentation/log_backend"
 
 require "./ext/log/broadcast_backend"
+require "./placeos-log-backend/constants"
 
 module PlaceOS::LogBackend
   enum Format
@@ -12,27 +14,6 @@ module PlaceOS::LogBackend
   Log = ::Log.for(self)
 
   STDOUT = ActionController.default_backend
-
-  LOG_FORMAT = ENV["PLACE_LOG_FORMAT"]?.presence.try { |format| Format.parse format } || Format::Line
-
-  UDP_LOG_HOST = self.env_with_deprecation("UDP_LOG_HOST", "LOGSTASH_HOST")
-  UDP_LOG_PORT = self.env_with_deprecation("UDP_LOG_PORT", "LOGSTASH_PORT").try &.to_i?
-
-  # The first argument will be treated as the correct environment variable.
-  # Presence of follwoing vars will produce warnings.
-  protected def self.env_with_deprecation(*args) : String?
-    if correct_env = ENV[args.first]?.presence
-      return correct_env
-    end
-
-    args[1..].each do |env|
-      found = ENV[env]?.presence
-      if found
-        Log.warn { "using deprecated env var #{env}, please use #{args.first}" }
-        return found
-      end
-    end
-  end
 
   # Hook to toggle `Log` instances' `:trace` severity
   # ## `enabled`
@@ -105,32 +86,42 @@ module PlaceOS::LogBackend
     in .json? then default_backend.formatter = ActionController.json_formatter
     end
 
-    return default_backend if udp_log_host.nil?
+    unless udp_log_host.nil?
+      abort("UDP_LOG_PORT is either malformed or not present in environment") if udp_log_port.nil?
 
-    abort("UDP_LOG_PORT is either malformed or not present in environment") if udp_log_port.nil?
-
-    # Logstash UDP Input
-    udp_stream = begin
-      UDPSocket.new.tap do |socket|
-        socket.connect udp_log_host, udp_log_port
-        socket.sync = false
+      # Logstash UDP Input
+      udp_stream = begin
+        UDPSocket.new.tap do |socket|
+          socket.connect udp_log_host, udp_log_port
+          socket.sync = false
+        end
+      rescue IO::Error
+        Log.error { {message: "failed to connect to UDP log consumer", host: udp_log_host, port: udp_log_port} }
+        nil
       end
-    rescue IO::Error
-      Log.error { {message: "failed to connect to UDP log consumer", host: udp_log_host, port: udp_log_port} }
-      nil
     end
 
-    # Use the default backend if connection to UDP log consumer failed
-    return default_backend if udp_stream.nil?
+    unless OTEL_EXPORTER_OTLP_ENDPOINT.nil?
+      opentelemetry_log_backend = OpenTelemetry::Instrumentation::LogBackend.new
+    end
+
+    return default_backend if udp_stream.nil? && opentelemetry_log_backend.nil?
 
     # Debug at the broadcast backend level, however this will be filtered by
     # the bindings.
     ::Log::BroadcastBackend.new.tap do |backend|
       backend.append(default_backend, :trace)
-      backend.append(ActionController.default_backend(
-        io: udp_stream,
-        formatter: ActionController.json_formatter
-      ), :trace)
+
+      if opentelemetry_log_backend
+        backend.append(opentelemetry_log_backend, :trace)
+      end
+
+      if udp_stream
+        backend.append(ActionController.default_backend(
+          io: udp_stream,
+          formatter: ActionController.json_formatter
+        ), :trace)
+      end
     end
   end
 end
