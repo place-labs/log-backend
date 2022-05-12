@@ -2,10 +2,10 @@ require "opentelemetry-instrumentation"
 
 # BEGIN OpenTelemetry Autoinstrumentation
 require "opentelemetry-instrumentation/src/opentelemetry/instrumentation/*"
-require "opentelemetry-instrumentation/src/opentelemetry/instrumentation/shards/*"
+# Require specific shards to prevent namespace clashes
 require "opentelemetry-instrumentation/src/opentelemetry/instrumentation/frameworks/spider-gazelle"
-# Require specific DB shards to prevent namespace clashes
-require "opentelemetry-instrumentation/src/opentelemetry/instrumentation/db/stefanwille_redis"
+require "opentelemetry-instrumentation/src/opentelemetry/instrumentation/shards/rethinkdb"
+require "opentelemetry-instrumentation/src/opentelemetry/instrumentation/shards/stefanwille_redis"
 # Require everything except the log instrumentation
 require "opentelemetry-instrumentation/src/opentelemetry/instrumentation/crystal/db"
 require "opentelemetry-instrumentation/src/opentelemetry/instrumentation/crystal/http_client"
