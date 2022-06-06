@@ -1,12 +1,12 @@
 name: placeos-log-backend
-version: 0.10.2
+version: 0.10.3
 crystal: "~> 1.0"
 license: MIT
 
 dependencies:
   action-controller:
     github: spider-gazelle/action-controller
-    version: ~> 4
+    version: ">= 4"
 
   opentelemetry-instrumentation:
     github: wyhaines/opentelemetry-instrumentation.cr
