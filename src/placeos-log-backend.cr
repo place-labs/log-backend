@@ -98,7 +98,8 @@ module PlaceOS::LogBackend
     end
 
     unless OTEL_EXPORTER_OTLP_ENDPOINT.nil?
-      opentelemetry_log_backend = OpenTelemetry::Instrumentation::LogBackend.new
+      # OpenTelemetry's LogBackend has to log on the same fiber, hence the use of sync dispatch mode.
+      opentelemetry_log_backend = OpenTelemetry::Instrumentation::LogBackend.new(dispatch_mode: ::Log::DispatchMode::Sync)
     end
 
     return default_backend if udp_stream.nil? && opentelemetry_log_backend.nil?
