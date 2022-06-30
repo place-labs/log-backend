@@ -1,5 +1,5 @@
 name: placeos-log-backend
-version: 0.10.6
+version: 0.11.0
 crystal: "~> 1.0"
 license: MIT
 
@@ -10,11 +10,11 @@ dependencies:
 
   opentelemetry-instrumentation:
     github: wyhaines/opentelemetry-instrumentation.cr
-    version: ">= 0.3.5"
+    branch: main
 
-  opentelemetry-api:
-    github: wyhaines/opentelemetry-api.cr
-    version: ">= 0.3.4"
+  opentelemetry-sdk:
+    github: wyhaines/opentelemetry-sdk.cr
+    version: ~> 0.5
 
 authors:
   - Caspian Baska <caspian@place.tech>
