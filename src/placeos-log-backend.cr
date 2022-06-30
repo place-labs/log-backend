@@ -41,19 +41,18 @@ module PlaceOS::LogBackend
     Log.info { "#{namespaces.join(", ")} log level changed to #{namespace_log_level}" }
   end
 
+  class_getter trace : Bool = false
+
   # Registers callbacks for USR1 and USR2
   #
   # **`USR1`**
-  # turns on `:trace` for _all_ `Log` instances
-  #
-  # **`USR2`**
-  # returns `namespaces`'s `Log`s to `:info` if `production` is `true`,
+  # toggles `:trace` for _all_ `Log` instances
+  # `namespaces`'s `Log`s to `:info` if `production` is `true`,
   # otherwise it is set to `:debug`.
   # `Log`'s not registered under `namespaces` are toggled to `default`
   #
   # ## Usage
-  # - `$ kill -USR2 ${the_application_pid}`
-  # - `$ kill -USR2 ${the_application_pid}`
+  # - `$ kill -USR1 ${the_application_pid}`
   def self.register_severity_switch_signals(
     production : Bool,
     namespaces : Array(String),
@@ -61,14 +60,16 @@ module PlaceOS::LogBackend
     backend = self.log_backend
   ) : Nil
     # Allow signals to change the log level at run-time
-    logging = Proc(Signal, Nil).new do |signal|
-      trace_logging(signal.usr1?, production, namespaces, default, backend)
+    Signal::USR1.trap do |signal|
+      @@trace = !@@trace
+      trace_logging(@@trace, production, namespaces, default, backend)
+
       # Ignore standard behaviour of the signal
       signal.ignore
-    end
 
-    Signal::USR1.trap &logging
-    Signal::USR2.trap &logging
+      # we need to re-register our interest in the signal
+      register_severity_switch_signals(production, namespaces, default, backend)
+    end
   end
 
   def self.log_backend(
