@@ -1,5 +1,4 @@
 require "action-controller/logger"
-require "dexter/json_log_formatter"
 require "nbchannel"
 require "tasker"
 

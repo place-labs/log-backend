@@ -18,5 +18,8 @@ dependencies:
 
   nbchannel:
     github: wyhaines/nbchannel.cr
+
+  tasker:
+    github: spider-gazelle/tasker
 authors:
   - Caspian Baska <caspian@place.tech>
