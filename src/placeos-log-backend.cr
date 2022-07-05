@@ -73,6 +73,8 @@ module PlaceOS::LogBackend
   end
 
   def self.log_backend(
+    service_name : String,
+    service_version : String,
     udp_log_host : String? = UDP_LOG_HOST,
     udp_log_port : Int32? = UDP_LOG_PORT,
     default_backend : ::Log::IOBackend = ActionController.default_backend,
@@ -82,6 +84,9 @@ module PlaceOS::LogBackend
     in .line? then default_backend.formatter = ActionController.default_formatter
     in .json? then default_backend.formatter = ActionController.json_formatter
     end
+
+    backends = [] of {Log::Severity, Log::Backend}
+    backends << {Log::Severity::Trace, default_backend}
 
     unless udp_log_host.nil?
       abort("UDP_LOG_PORT is either malformed or not present in environment") if udp_log_port.nil?
@@ -96,29 +101,40 @@ module PlaceOS::LogBackend
         Log.error { {message: "failed to connect to UDP log consumer", host: udp_log_host, port: udp_log_port} }
         nil
       end
+
+      if udp_stream
+        backends << {Log::Severity::Trace, ActionController.default_backend(
+          io: udp_stream,
+          formatter: ActionController.json_formatter
+        )}
+      end
     end
 
     unless OTEL_EXPORTER_OTLP_ENDPOINT.nil?
       # OpenTelemetry's LogBackend has to log on the same fiber, hence the use of sync dispatch mode.
-      opentelemetry_log_backend = OpenTelemetry::Instrumentation::LogBackend.new(dispatch_mode: ::Log::DispatchMode::Sync)
+      backends << {Log::Severity::Trace, OpenTelemetry::Instrumentation::LogBackend.new}
     end
 
-    return default_backend if udp_stream.nil? && opentelemetry_log_backend.nil?
+    if (new_relic_key = NEW_RELIC_LICENSE_KEY) && (new_relic_http_log_endpoint = NEW_RELIC_HTTP_LOG_ENDPOINT)
+      backends << {
+        Log::Severity::Info,
+        NewRelicLogBackend.new(
+          service_name: service_name,
+          service_version: service_version,
+          key: new_relic_key,
+          endpoint: new_relic_http_log_endpoint
+        ),
+      }
+    end
 
-    # Debug at the broadcast backend level, however this will be filtered by
-    # the bindings.
-    ::Log::BroadcastBackend.new.tap do |backend|
-      backend.append(default_backend, :trace)
-
-      if opentelemetry_log_backend
-        backend.append(opentelemetry_log_backend, :trace)
-      end
-
-      if udp_stream
-        backend.append(ActionController.default_backend(
-          io: udp_stream,
-          formatter: ActionController.json_formatter
-        ), :trace)
+    if backends.size == 1
+      backends.first
+    else
+      # Debug at the broadcast backend level, however this will be filtered by the bindings.
+      ::Log::BroadcastBackend.new.tap do |broadcast_backend|
+        backends.each do |severity, backend|
+          broadcast_backend.append(backend, severity)
+        end
       end
     end
   end
