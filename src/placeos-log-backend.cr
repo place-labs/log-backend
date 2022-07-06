@@ -85,8 +85,8 @@ module PlaceOS::LogBackend
     in .json? then default_backend.formatter = ActionController.json_formatter
     end
 
-    backends = [] of {Log::Severity, Log::Backend}
-    backends << {Log::Severity::Trace, default_backend}
+    backends = [] of {::Log::Severity, Log::Backend}
+    backends << {::Log::Severity::Trace, default_backend}
 
     unless udp_log_host.nil?
       abort("UDP_LOG_PORT is either malformed or not present in environment") if udp_log_port.nil?
@@ -103,7 +103,7 @@ module PlaceOS::LogBackend
       end
 
       if udp_stream
-        backends << {Log::Severity::Trace, ActionController.default_backend(
+        backends << {::Log::Severity::Trace, ActionController.default_backend(
           io: udp_stream,
           formatter: ActionController.json_formatter
         )}
@@ -112,12 +112,12 @@ module PlaceOS::LogBackend
 
     unless OTEL_EXPORTER_OTLP_ENDPOINT.nil?
       # OpenTelemetry's LogBackend has to log on the same fiber, hence the use of sync dispatch mode.
-      backends << {Log::Severity::Trace, OpenTelemetry::Instrumentation::LogBackend.new}
+      backends << {::Log::Severity::Trace, OpenTelemetry::Instrumentation::LogBackend.new}
     end
 
     if service_name && service_version && (new_relic_key = NEW_RELIC_LICENSE_KEY) && (new_relic_http_log_endpoint = NEW_RELIC_HTTP_LOG_ENDPOINT)
       backends << {
-        Log::Severity::Info,
+        ::Log::Severity::Info,
         NewRelicLogBackend.new(service_name, service_version, new_relic_http_log_endpoint, new_relic_key),
       }
     end
