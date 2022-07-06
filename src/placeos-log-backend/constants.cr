@@ -20,7 +20,7 @@ module PlaceOS
 
   # New Relic Logging
   NEW_RELIC_BUFFER_CAPACITY = ENV["NEW_RELIC_BUFFER_CAPACITY"]?.presence.try(&.to_i?) || 500_000
-  NEW_RELIC_LOG_PREIOD      = (ENV["NEW_RELIC_LOG_PREIOD"]?.presence.try(&.to_i?) || 45).seconds
+  NEW_RELIC_LOG_PERIOD      = (ENV["NEW_RELIC_LOG_PREIOD"]?.presence.try(&.to_i?) || 45).seconds
 
   # The first argument will be treated as the correct environment variable.
   # Presence of follwoing vars will produce warnings.

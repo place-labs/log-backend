@@ -124,7 +124,7 @@ module PlaceOS::LogBackend
     end
 
     if backends.size == 1
-      backends.first
+      backends.first.last
     else
       # Debug at the broadcast backend level, however this will be filtered by the bindings.
       ::Log::BroadcastBackend.new.tap do |broadcast_backend|
