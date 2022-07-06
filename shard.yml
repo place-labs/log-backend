@@ -18,6 +18,7 @@ dependencies:
 
   nbchannel:
     github: wyhaines/nbchannel.cr
+    branch: main
 
   tasker:
     github: spider-gazelle/tasker
