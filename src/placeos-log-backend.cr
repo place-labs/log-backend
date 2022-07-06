@@ -85,7 +85,7 @@ module PlaceOS::LogBackend
     in .json? then default_backend.formatter = ActionController.json_formatter
     end
 
-    backends = [] of {::Log::Severity, Log::Backend}
+    backends = [] of {::Log::Severity, ::Log::Backend}
     backends << {::Log::Severity::Trace, default_backend}
 
     unless udp_log_host.nil?
