@@ -22,7 +22,12 @@ class NewRelicLogBackend < Log::Backend
     @key,
     @dispatch_mode : Log::DispatchMode = :async
   )
+    # Empty peridically or when buffer is full
     @task = Tasker.every(BUFFER_LOG_PERIOD) { flush }
+
+    # Start buffering logs asynchronously
+    spawn { buffer_logs }
+
     super(@dispatch_mode)
   end
 
@@ -38,7 +43,6 @@ class NewRelicLogBackend < Log::Backend
 
   protected def with_buffer
     buffer_lock.synchronize { yield @logs }
-    spawn { buffer_logs }
   end
 
   private COMMON = {
