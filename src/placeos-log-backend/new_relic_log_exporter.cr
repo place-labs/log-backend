@@ -5,10 +5,6 @@ require "tasker"
 require "../constants"
 
 class NewRelicLogBackend < Log::Backend
-  # Empty peridically or when buffer is full
-  BUFFER_CAPACITY   = 5_000_000
-  BUFFER_LOG_PERIOD = 45.seconds
-
   protected getter service_name : String
   protected getter service_version : String
 

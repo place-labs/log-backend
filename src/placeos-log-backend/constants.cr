@@ -18,6 +18,10 @@ module PlaceOS
   UDP_LOG_HOST = self.env_with_deprecation("UDP_LOG_HOST", "LOGSTASH_HOST")
   UDP_LOG_PORT = self.env_with_deprecation("UDP_LOG_PORT", "LOGSTASH_PORT").try &.to_i?
 
+  # New Relic Logging
+  NEW_RELIC_BUFFER_CAPACITY = ENV["NEW_RELIC_BUFFER_CAPACITY"]?.presence.try(&.to_i?) || 500_000
+  NEW_RELIC_LOG_PREIOD      = (ENV["NEW_RELIC_LOG_PREIOD"]?.presence.try(&.to_i?) || 45).seconds
+
   # The first argument will be treated as the correct environment variable.
   # Presence of follwoing vars will produce warnings.
   protected def self.env_with_deprecation(*args) : String?

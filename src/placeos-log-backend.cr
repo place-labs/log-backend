@@ -73,12 +73,12 @@ module PlaceOS::LogBackend
   end
 
   def self.log_backend(
-    service_name : String,
-    service_version : String,
     udp_log_host : String? = UDP_LOG_HOST,
     udp_log_port : Int32? = UDP_LOG_PORT,
     default_backend : ::Log::IOBackend = ActionController.default_backend,
-    format : Format = LOG_FORMAT
+    format : Format = LOG_FORMAT,
+    service_name : String? = nil,
+    service_version : String? = nil
   )
     case format
     in .line? then default_backend.formatter = ActionController.default_formatter
@@ -115,15 +115,10 @@ module PlaceOS::LogBackend
       backends << {Log::Severity::Trace, OpenTelemetry::Instrumentation::LogBackend.new}
     end
 
-    if (new_relic_key = NEW_RELIC_LICENSE_KEY) && (new_relic_http_log_endpoint = NEW_RELIC_HTTP_LOG_ENDPOINT)
+    if service_name && service_version && (new_relic_key = NEW_RELIC_LICENSE_KEY) && (new_relic_http_log_endpoint = NEW_RELIC_HTTP_LOG_ENDPOINT)
       backends << {
         Log::Severity::Info,
-        NewRelicLogBackend.new(
-          service_name: service_name,
-          service_version: service_version,
-          key: new_relic_key,
-          endpoint: new_relic_http_log_endpoint
-        ),
+        NewRelicLogBackend.new(service_name, service_version, new_relic_http_log_endpoint, new_relic_key),
       }
     end
 
