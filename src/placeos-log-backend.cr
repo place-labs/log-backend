@@ -5,6 +5,7 @@ require "opentelemetry-instrumentation/log_backend"
 require "./ext/log/broadcast_backend"
 require "./placeos-log-backend/format"
 require "./placeos-log-backend/constants"
+require "./placeos-log-backend/new_relic_log_exporter"
 
 module PlaceOS::LogBackend
   Log = ::Log.for(self)
