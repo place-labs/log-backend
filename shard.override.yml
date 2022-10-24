@@ -1,0 +1,4 @@
+dependencies:
+  opentelemetry-instrumentation:
+    github: stakach/opentelemetry-instrumentation.cr
+    branch: patch-1
