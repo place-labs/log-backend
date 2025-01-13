@@ -1,6 +1,5 @@
 name: placeos-log-backend
-version: 0.12.0
-crystal: "~> 1.0"
+version: 0.13.0
 license: MIT
 
 dependencies:
@@ -8,19 +7,8 @@ dependencies:
     github: spider-gazelle/action-controller
     version: ">= 4"
 
-  opentelemetry-instrumentation:
-    github: wyhaines/opentelemetry-instrumentation.cr
-    branch: main
-
-  opentelemetry-sdk:
-    github: wyhaines/opentelemetry-sdk.cr
-    branch: main
-
-  nbchannel:
-    github: wyhaines/nbchannel.cr
-    branch: main
-
   tasker:
     github: spider-gazelle/tasker
+
 authors:
   - Caspian Baska <caspian@place.tech>

@@ -1,11 +1,9 @@
 require "action-controller"
 require "log"
-require "opentelemetry-instrumentation/log_backend"
 
 require "./ext/log/broadcast_backend"
 require "./placeos-log-backend/format"
 require "./placeos-log-backend/constants"
-require "./placeos-log-backend/new_relic_log_exporter"
 
 module PlaceOS::LogBackend
   Log = ::Log.for(self)
@@ -109,18 +107,6 @@ module PlaceOS::LogBackend
           formatter: ActionController.json_formatter
         )}
       end
-    end
-
-    unless OTEL_EXPORTER_OTLP_ENDPOINT.nil?
-      # OpenTelemetry's LogBackend has to log on the same fiber, hence the use of sync dispatch mode.
-      backends << {::Log::Severity::Trace, OpenTelemetry::Instrumentation::LogBackend.new}
-    end
-
-    if service_name && service_version && (new_relic_key = NEW_RELIC_LICENSE_KEY) && (new_relic_http_log_endpoint = NEW_RELIC_HTTP_LOG_ENDPOINT)
-      backends << {
-        ::Log::Severity::Info,
-        NewRelicLogBackend.new(service_name, service_version, new_relic_http_log_endpoint, new_relic_key),
-      }
     end
 
     if backends.size == 1
